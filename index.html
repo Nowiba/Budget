@@ -179,6 +179,21 @@
             margin: 10px 0;
         }
 
+        .delete-btn {
+            background-color: #e53e3e;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background-color: #c53030;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 15px;
@@ -206,7 +221,7 @@
 
         <div class="week-nav">
             <button id="prevWeek">&larr; Previous Week</button>
-            <span id="weekDisplay">Week 1</span>
+            <span id="weekDisplay"></span>
             <button id="nextWeek">Next Week &rarr;</button>
         </div>
 
@@ -215,7 +230,6 @@
             <input type="text" id="expenseName" placeholder="What did you buy?" required>
             <input type="number" id="expenseAmount" placeholder="How much did it cost?" required min="0" step="0.01">
             <select id="expenseDay" required>
-                <option value="" disabled selected>Select day</option>
                 <option value="1">Monday</option>
                 <option value="2">Tuesday</option>
                 <option value="3">Wednesday</option>
@@ -224,7 +238,7 @@
                 <option value="6">Saturday</option>
                 <option value="7">Sunday</option>
             </select>
-            <input type="time" id="expenseTime" required>
+            <input type="number" id="expenseDate" placeholder="Enter day of the month" required min="1" max="31">
             <button type="submit">Add Expense</button>
         </form>
 
@@ -234,6 +248,7 @@
 
     <script>
         let currentWeek = 1;
+        let currentMonth = '01'; // Default month (January)
         const data = JSON.parse(localStorage.getItem('budgetData')) || {
             weeklyBudget: 0,
             expenses: {}
@@ -280,15 +295,16 @@
             `;
             document.getElementById('summary').innerHTML = summaryHTML;
 
-            const expensesHTML = weekExpenses.map(exp => `
+            const expensesHTML = weekExpenses.map((exp, index) => `
                 <div class="expense-item">
                     <div>
                         <div class="expense-amount">${formatCurrency(exp.amount)}</div>
                         <div class="expense-details">
                             <strong>${exp.name}</strong><br>
-                            ${getDayName(exp.day)} at ${exp.time}
+                            ${getDayName(exp.day)} ${exp.date}
                         </div>
                     </div>
+                    <button class="delete-btn" onclick="deleteExpense(${index})">Delete</button>
                 </div>
             `).join('') || '<p style="text-align: center; color: #718096;">No expenses recorded this week</p>';
             
@@ -303,6 +319,13 @@
             return days[day - 1];
         }
 
+        function deleteExpense(index) {
+            const weekExpenses = data.expenses[currentWeek];
+            weekExpenses.splice(index, 1); // Remove the expense at the given index
+            saveData();
+            updateDisplay();
+        }
+
         document.getElementById('budgetForm').addEventListener('submit', (e) => {
             e.preventDefault();
             data.weeklyBudget = parseFloat(document.getElementById('weeklyBudget').value);
@@ -315,8 +338,8 @@
             const expense = {
                 name: document.getElementById('expenseName').value,
                 amount: parseFloat(document.getElementById('expenseAmount').value),
-                day: document.getElementById('expenseDay').value,
-                time: document.getElementById('expenseTime').value
+                day: parseInt(document.getElementById('expenseDay').value),
+                date: parseInt(document.getElementById('expenseDate').value),
             };
 
             if (!data.expenses[currentWeek]) {
