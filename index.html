@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #1a202c;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .budget-form, .expense-form {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .week-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        #weekDisplay {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .summary {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #1a202c;
+        }
+
+        .summary p {
+            font-size: 1.1em;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .expenses-list {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .expense-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .expense-details {
+            font-size: 0.9em;
+            color: #718096;
+        }
+
+        .expense-amount {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .status-good { 
+            color: #48bb78;
+            font-weight: 600;
+        }
+        .status-warning { 
+            color: #ecc94b;
+            font-weight: 600;
+        }
+        .status-bad { 
+            color: #f56565;
+            font-weight: 600;
+        }
+
+        .budget-stat {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f7fafc;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .expense-item {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Budget Tracker</h1>
+        
+        <form class="budget-form" id="budgetForm">
+            <div class="form-title">Set Your Weekly Budget</div>
+            <input type="number" id="weeklyBudget" placeholder="Enter amount" required min="0" step="0.01">
+            <button type="submit">Set Budget</button>
+        </form>
+
+        <div class="week-nav">
+            <button id="prevWeek">&larr; Previous Week</button>
+            <span id="weekDisplay">Week 1</span>
+            <button id="nextWeek">Next Week &rarr;</button>
+        </div>
+
+        <form class="expense-form" id="expenseForm">
+            <div class="form-title">Add New Expense</div>
+            <input type="text" id="expenseName" placeholder="What did you buy?" required>
+            <input type="number" id="expenseAmount" placeholder="How much did it cost?" required min="0" step="0.01">
+            <select id="expenseDay" required>
+                <option value="" disabled selected>Select day</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="7">Sunday</option>
+            </select>
+            <input type="time" id="expenseTime" required>
+            <button type="submit">Add Expense</button>
+        </form>
+
+        <div class="summary" id="summary"></div>
+        <div class="expenses-list" id="expensesList"></div>
+    </div>
+
+    <script>
+        let currentWeek = 1;
+        const data = JSON.parse(localStorage.getItem('budgetData')) || {
+            weeklyBudget: 0,
+            expenses: {}
+        };
+
+        function saveData() {
+            localStorage.setItem('budgetData', JSON.stringify(data));
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function updateDisplay() {
+            document.getElementById('weekDisplay').textContent = `Week ${currentWeek}`;
+            document.getElementById('weeklyBudget').value = data.weeklyBudget;
+            
+            const weekExpenses = data.expenses[currentWeek] || [];
+            const totalSpent = weekExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const remaining = data.weeklyBudget - totalSpent;
+            const percentageSpent = (totalSpent / data.weeklyBudget) * 100;
+            
+            let statusClass = 'status-good';
+            if (percentageSpent >= 90) {
+                statusClass = 'status-bad';
+            } else if (percentageSpent >= 75) {
+                statusClass = 'status-warning';
+            }
+
+            const summaryHTML = `
+                <h3>Weekly Summary</h3>
+                <div class="budget-stat">
+                    <p>Weekly Budget <span>${formatCurrency(data.weeklyBudget)}</span></p>
+                </div>
+                <div class="budget-stat">
+                    <p>Total Spent <span>${formatCurrency(totalSpent)}</span></p>
+                </div>
+                <div class="budget-stat">
+                    <p>Remaining Budget <span class="${statusClass}">${formatCurrency(remaining)}</span></p>
+                </div>
+            `;
+            document.getElementById('summary').innerHTML = summaryHTML;
+
+            const expensesHTML = weekExpenses.map(exp => `
+                <div class="expense-item">
+                    <div>
+                        <div class="expense-amount">${formatCurrency(exp.amount)}</div>
+                        <div class="expense-details">
+                            <strong>${exp.name}</strong><br>
+                            ${getDayName(exp.day)} at ${exp.time}
+                        </div>
+                    </div>
+                </div>
+            `).join('') || '<p style="text-align: center; color: #718096;">No expenses recorded this week</p>';
+            
+            document.getElementById('expensesList').innerHTML = `
+                <div class="form-title">Expenses This Week</div>
+                ${expensesHTML}
+            `;
+        }
+
+        function getDayName(day) {
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            return days[day - 1];
+        }
+
+        document.getElementById('budgetForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            data.weeklyBudget = parseFloat(document.getElementById('weeklyBudget').value);
+            saveData();
+            updateDisplay();
+        });
+
+        document.getElementById('expenseForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const expense = {
+                name: document.getElementById('expenseName').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                day: document.getElementById('expenseDay').value,
+                time: document.getElementById('expenseTime').value
+            };
+
+            if (!data.expenses[currentWeek]) {
+                data.expenses[currentWeek] = [];
+            }
+            data.expenses[currentWeek].push(expense);
+            
+            saveData();
+            updateDisplay();
+            e.target.reset();
+        });
+
+        document.getElementById('prevWeek').addEventListener('click', () => {
+            if (currentWeek > 1) {
+                currentWeek--;
+                updateDisplay();
+            }
+        });
+
+        document.getElementById('nextWeek').addEventListener('click', () => {
+            currentWeek++;
+            updateDisplay();
+        });
+
+        // Initial display
+        updateDisplay();
+    </script>
+</body>
+</html>
